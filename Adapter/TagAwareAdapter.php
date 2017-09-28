@@ -245,8 +245,14 @@ class TagAwareAdapter implements TagAwareAdapterInterface
                 $this->itemsAdapter->deleteItems($deletedTags);
             }
         }
+	
+	$poolOk = $this->itemsAdapter->commit();
+        $res = $poolOk && $ok;
+	if (!$res) {
+	    throw new \RuntimeException("ItemsOK: $poolOk. Ok: $ok");
+	}
 
-        return $this->itemsAdapter->commit() && $ok;
+	return $res;
     }
 
     public function __destruct()

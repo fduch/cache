@@ -347,10 +347,10 @@ abstract class AbstractAdapter implements AdapterInterface, LoggerAwareInterface
             $this->doDelete($expiredIds);
         }
         foreach ($byLifetime as $lifetime => $values) {
-            try {
+//            try {
                 $e = $this->doSave($values, $lifetime);
-            } catch (\Exception $e) {
-            }
+//            } catch (\Exception $e) {
+//            }
             if (true === $e || array() === $e) {
                 continue;
             }
@@ -359,6 +359,7 @@ abstract class AbstractAdapter implements AdapterInterface, LoggerAwareInterface
                     $ok = false;
                     $v = $values[$id];
                     $type = is_object($v) ? get_class($v) : gettype($v);
+                    throw new \RuntimeException(sprintf('Failed to save key "%s" (%s)', substr($id, strlen($this->namespace)), $type));
                     CacheItem::log($this->logger, 'Failed to save key "{key}" ({type})', array('key' => substr($id, strlen($this->namespace)), 'type' => $type, 'exception' => $e instanceof \Exception ? $e : null));
                 }
             } else {
@@ -371,16 +372,17 @@ abstract class AbstractAdapter implements AdapterInterface, LoggerAwareInterface
         // When bulk-save failed, retry each item individually
         foreach ($retry as $lifetime => $ids) {
             foreach ($ids as $id) {
-                try {
+  //              try {
                     $v = $byLifetime[$lifetime][$id];
                     $e = $this->doSave(array($id => $v), $lifetime);
-                } catch (\Exception $e) {
-                }
+//                } catch (\Exception $e) {
+//                }
                 if (true === $e || array() === $e) {
                     continue;
                 }
                 $ok = false;
                 $type = is_object($v) ? get_class($v) : gettype($v);
+                throw new \RuntimeException(sprintf('Failed to save key "%s" (%s)', substr($id, strlen($this->namespace)), $type));
                 CacheItem::log($this->logger, 'Failed to save key "{key}" ({type})', array('key' => substr($id, strlen($this->namespace)), 'type' => $type, 'exception' => $e instanceof \Exception ? $e : null));
             }
         }
